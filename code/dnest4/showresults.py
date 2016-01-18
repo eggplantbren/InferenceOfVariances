@@ -1,10 +1,14 @@
-# Import postprocess from two directories up
-# http://stackoverflow.com/a/9806045
-import os
-parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-parentdir = os.path.dirname(parentdir)
-os.sys.path.insert(0, parentdir)
+from corner import corner
+import numpy as np
 
-import dnest4
-dnest4.postprocess()
+sample = np.loadtxt("sample.txt")
+sample_info = np.loadtxt("sample_info.txt")
+
+# Take samples from highest level
+sample = sample[sample_info[:,0] == 14, :]
+sample = np.vstack([sample[:,0], np.exp(sample[:,1])**2]).T
+print(sample.shape)
+fig = corner(sample, bins=128, labels = ["mean", "var"])
+print("saving corner plot...")
+fig.savefig("corner.png", bbox_inches="tight")
 

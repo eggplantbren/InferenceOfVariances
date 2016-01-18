@@ -45,8 +45,8 @@ double MyModel::perturb(RNG& rng)
 
 double MyModel::log_likelihood() const
 {
-	double x_min = Data::get_instance().get_x_min();
-	double x_max = Data::get_instance().get_x_max();
+	double x_mean = Data::get_instance().get_x_mean();
+	double x_var = Data::get_instance().get_x_var();
 
 	double sigma = exp(log_sigma);
 
@@ -55,10 +55,22 @@ double MyModel::log_likelihood() const
 	for(size_t i=0; i<x_fake.size(); i++)
 		x_fake[i] = mu + sigma*x_fake[i];
 
+	// Summary stats of fake dataset
+	double x_fake_mean = 0.;
+	for(size_t i=0; i<x_fake.size(); i++)
+		x_fake_mean += x_fake[i];
+	x_fake_mean /= x_fake.size();
+
+	double x_fake_var = 0.;
+	for(size_t i=0; i<x_fake.size(); i++)
+		x_fake_var += pow(x_fake[i] - x_fake_mean, 2);
+	x_fake_var /= x_fake.size();
+
 	// Goodness
 	double logL = 0.;
-	logL -= pow(*min_element(x_fake.begin(), x_fake.end()) - x_min, 2);
-	logL -= pow(*max_element(x_fake.begin(), x_fake.end()) - x_max, 2);
+
+	logL -= pow(x_fake_mean - x_mean, 2);
+	logL -= pow(sqrt(x_fake_var) - sqrt(x_var), 2);
 
 	return logL;
 }
@@ -66,8 +78,6 @@ double MyModel::log_likelihood() const
 void MyModel::print(std::ostream& out) const
 {
 	out<<mu<<' '<<log_sigma<<' ';
-	for(size_t i=0; i<x_fake_latent.size(); i++)
-		out<<x_fake_latent[i]<<' ';
 }
 
 string MyModel::description() const

@@ -29,7 +29,15 @@ void Data::load(const char* filename)
 
 	fin.close();
 
-	x_min = *min_element(x.begin(), x.end());
-	x_max = *max_element(x.begin(), x.end());
+	// Compute the summaries
+	x_mean = 0.;
+	for(const double& xx: x)
+		x_mean += xx;
+	x_mean /= x.size();
+
+	x_var = 0.;
+	for(const double& xx: x)
+		x_var += pow(xx - x_mean, 2);
+	x_var /= x.size();	
 }
 
